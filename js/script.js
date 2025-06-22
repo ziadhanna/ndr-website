@@ -1,9 +1,6 @@
 // Determines the correct path to the header.html file based on the current page location
 const getHeaderPath = () => {
-    if (window.location.pathname.includes('/pages/')) {
-        return '../components/header.html';
-    }
-    return './components/header.html';
+    return `${window.location.origin}/components/header.html`;
 };
 
 // Loads the navbar HTML dynamically into the <header> element
@@ -27,7 +24,12 @@ const setActiveNavItem = () => {
     navLinks.forEach(link => {
         link.classList.remove('active');
         const linkPath = link.getAttribute('href').split('/').pop();
+        // Set active for normal nav links
         if (linkPath === currentPath || (linkPath === '' && currentPath === '')) {
+            link.classList.add('active');
+        }
+        // Special case: set active for user profile link if on profile.html
+        if (currentPath === 'profile.html' && linkPath === 'profile.html') {
             link.classList.add('active');
         }
     });
@@ -41,18 +43,19 @@ const addSignInNavItem = () => {
     // Create a separator element for visual separation
     let separator = document.createElement('li');
     separator.className = 'nav-item separator';
-    separator.innerHTML = `<span class="nav-link disabled" style="pointer-events:none;opacity:0.5;">|</span>`;
+    separator.innerHTML = `<span class="nav-link disabled hide-small" style="pointer-events:none;opacity:0.5;">|</span>`;
 
     // Create the sign-in or profile nav item
     let navItem = document.createElement('li');
     navItem.className = 'nav-item';
 
+    const baseUrl = window.location.origin;
     if (user && user.name) {
         // If user is signed in, show profile link
-        navItem.innerHTML = `<a class="nav-link" href="../pages/profile.html">${user.name}</a>`;
+        navItem.innerHTML = `<a class="nav-link" href="profile.html">${user.name}</a>`;
     } else {
         // Otherwise, show sign-in link
-        navItem.innerHTML = `<a class="nav-link" href="../pages/signin.html">Sign In</a>`;
+        navItem.innerHTML = `<a class="nav-link" href="/signin.html">Sign In</a>`;
     }
 
     // Append separator and nav item to the navbar
@@ -60,6 +63,7 @@ const addSignInNavItem = () => {
     navList.appendChild(navItem);
 }
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadNavbarDynamic().then(setActiveNavItem);
+    await loadNavbarDynamic();
     addSignInNavItem();
+    setActiveNavItem();
 });

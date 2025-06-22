@@ -1,42 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Sign In with Auth0</title>
-    <script src="https://cdn.auth0.com/js/auth0/9.27/auth0.min.js"></script>
-    <style>
-        /* body { font-family: Arial, sans-serif; background: #f4f4f4; }
-        .container { max-width: 400px; margin: 100px auto; background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
-        button { width: 100%; padding: 1em; background: #eb5424; color: #fff; border: none; border-radius: 4px; font-size: 1em; cursor: pointer;}
-        #welcome { margin-top: 1em; color: #333; } */
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In</title>
 
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-
-    <!-- Your custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-    <header></header>
-    <!-- <div class="container">
-        <h2>Sign In</h2>
-        <button id="signInBtn">Sign in with Auth0</button>
-        <div id="welcome"></div>
-    </div>
-    <script src="js/signin.js"></script> -->
-</body>
 
+  <header></header>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+
+  <!-- Your custom JS -->
+  <script src="js/script.js"></script>
+</body>
 </html>
-<script src="js/script.js"></script>
+<script>
+  // if (!localStorage.getItem('ndrUser')) {
+  //   window.location.href = `signin.html?redirectUri=${window.location.origin}/activities.html`;
+  // }
+</script>
+
 <!-- Under Construction Page -->
 <script>
-    fetch('components/under-construction.html')
-        .then(response => response.text())
-        .then(html => {
-            document.body.insertAdjacentHTML('beforeend', html);
-        });
+  fetch('components/under-construction.html')
+    .then(response => response.text())
+    .then(html => {
+      document.body.insertAdjacentHTML('beforeend', html);
+    });
 </script>

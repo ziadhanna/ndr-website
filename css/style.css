@@ -1,0 +1,136 @@
+:root {
+    --primary-color: #9F69A5;
+    --secondary-color: #FAF0E6;
+    --text-color: #2d2d2d;
+    --background-color: #fff;
+    --border-radius: 6px;
+}
+
+body {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header, footer {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #7c4d80;
+}
+
+button, .btn {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.6em 1.2em;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.2s;
+}
+
+button:hover, .btn:hover {
+    background: #7c4d80;
+}
+
+.card {
+    background: var(--background-color);
+    border: 1px solid #e0d6e3;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(159, 105, 165, 0.08);
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+input, textarea, select {
+    border: 1px solid #d1bcd6;
+    border-radius: var(--border-radius);
+    padding: 0.5em;
+    font-size: 1em;
+    background: var(--secondary-color);
+    color: var(--text-color);
+    margin-bottom: 1em;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.navbar.navbar-light.bg-light,
+.navbar.navbar-expand-lg.bg-light {
+    background-color: var(--primary-color) !important;
+}
+
+.navbar.navbar-light .navbar-nav .nav-link,
+.navbar.navbar-expand-lg .navbar-nav .nav-link {
+    color: var(--secondary-color) !important;
+    font-weight: normal;
+}
+
+.navbar.navbar-light .navbar-nav .nav-link.active,
+.navbar.navbar-expand-lg .navbar-nav .nav-link.active {
+    color: var(--secondary-color) !important;
+    font-weight: bold;
+}
+
+.navbar-brand {
+    color: var(--secondary-color) !important;
+    font-weight: bold;
+}
+
+.navbar, .navbar .container-fluid {
+    min-height: 70px;
+    font-size: 1.15rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    font-size: 1.1rem;
+}
+
+.navbar-brand img {
+    width: 38px;
+    height: 38px;
+}
+
+.navbar-brand img {
+    width: 48px;
+    height: 48px;
+    margin-right: 16px;
+    vertical-align: middle;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (min-width: 992px) {
+    .hide-big {
+        display: none !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .hide-small {
+        display: none !important;
+    }
+}

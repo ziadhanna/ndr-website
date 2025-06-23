@@ -29,7 +29,7 @@ const setActiveNavItem = () => {
             link.classList.add('active');
         }
         // Special case: set active for user profile link if on profile.html
-        if (currentPath === 'profile.html' && linkPath === 'profile.html') {
+        if (currentPath === 'profile.html' && linkPath === '#') {
             link.classList.add('active');
         }
     });
@@ -45,25 +45,63 @@ const addSignInNavItem = () => {
     separator.className = 'nav-item separator';
     separator.innerHTML = `<span class="nav-link disabled hide-small" style="pointer-events:none;opacity:0.5;">|</span>`;
 
-    // Create the sign-in or profile nav item
     let navItem = document.createElement('li');
     navItem.className = 'nav-item';
 
-    const baseUrl = window.location.origin;
     if (user && user.name) {
-        // If user is signed in, show profile link
-        navItem.innerHTML = `<a class="nav-link" href="profile.html">${user.name}</a>`;
+        // Dropdown for signed-in user
+        navItem.classList.add('dropdown');
+        navItem.innerHTML = `
+            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                ${user.name}
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                <li><a class="dropdown-item" href="#" id="signOutLink">Sign Out</a></li>
+            </ul>
+        `;
     } else {
         // Otherwise, show sign-in link
         navItem.innerHTML = `<a class="nav-link" href="/signin.html">Sign In</a>`;
     }
 
-    // Append separator and nav item to the navbar
     navList.appendChild(separator);
     navList.appendChild(navItem);
+
+    // Add sign out handler if user is signed in
+    if (user && user.name) {
+        setTimeout(() => {
+            const signOutLink = document.getElementById('signOutLink');
+            if (signOutLink) {
+                signOutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('ndrUser');
+                    window.location.href = '/signout.html';
+                });
+            }
+        }, 0);
+    }
 }
+
+const redirectToSignIn = (pageSubUrl) => {
+    if (!localStorage.getItem('ndrUser')) {
+        window.location.href = `signin.html?redirectUri=${window.location.origin}/${pageSubUrl}`;
+    }
+}
+
+const setUserName = () => {
+    const user = JSON.parse(localStorage.getItem('ndrUser'));
+    if (user && user.name) {
+        document.getElementById('userFullName').textContent = user.name;
+    }
+    else {
+        document.getElementById('userFullName').textContent = "Chief";
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     await loadNavbarDynamic();
     addSignInNavItem();
     setActiveNavItem();
+    setUserName();
 });

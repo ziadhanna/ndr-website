@@ -17,21 +17,23 @@ function handleAuthentication() {
         if (authResult && authResult.accessToken) {
             auth0Client.client.userInfo(authResult.accessToken, async (err, user) => {
                 if (user) {
-                    const nameOrEmail = user.name || user.email;
-                    document.getElementById('welcome').textContent = `Welcome, ${nameOrEmail}`;
                     window.location.href = getRedirectUri();
                     localStorage.setItem('ndrUser', JSON.stringify(user));
                 } else if (err) {
-                    document.getElementById('welcome').textContent = `Error: ${err.errorDescription}`;
+                    console.error(`Error: ${err.errorDescription}`);
                 }
             });
         }
     });
 }
 
-document.getElementById('signInBtn').onclick = function () {
-    auth0Client.authorize();
-};
+document.addEventListener("DOMContentLoaded", async () => {
+    // Only authorize if there is no access token in the URL hash
+    const hash = window.location.hash;
+    if (!hash.includes('access_token')) {
+        auth0Client.authorize();
+    }
+});
 
 // Handle authentication if returning from Auth0
 window.onload = handleAuthentication;

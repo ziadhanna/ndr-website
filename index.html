@@ -1,34 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NDR</title>
-
-  <!-- Bootstrap CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-  
-  <!-- Your custom CSS -->
+  <title>NDR - Welcome</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
   <header></header>
 
-  <!-- Bootstrap JS Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  <main class="container">
+    <div class="row justify-content-center text-center mb-4 pt-5 pb-4">
+      <div class="col-lg-8">
+        <h1 class="mb-0">Welcome, <span id="userFullName">User Name</span>!</h1>
+        <p class="lead mb-0">Explore your dashboard below.</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <!-- Activities Section -->
+      <a href="activities.html" class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="images/activities.png" class="card-img-top" alt="Activities">
+          <div class="card-body">
+            <p class="card-text">View and manage the ongoing trimester’s program, including weekly meetings, next
+              activities, and camps.</p>
+          </div>
+        </div>
+      </a>
+      <!-- Archive Section -->
+      <a href="archive.html" class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="images/archive.png" class="card-img-top" alt="Archive">
+          <div class="card-body">
+            <p class="card-text">Browse previous trimester programs, meeting and camp plans, photos, and inventory lists
+              from past scouting seasons.</p>
+          </div>
+        </div>
+      </a>
+      <!-- Progression Section -->
+      <a href="progression.html" class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="images/progression.png" class="card-img-top" alt="Progression">
+          <div class="card-body">
+            <p class="card-text">Track scout members’ profiles, update their information, and follow their progression
+              through the scouting advancement system.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </main>
 
-  <!-- Your custom JS -->
-  <script src="js/script.js"></script>
-  <script src="js/header.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./js/script.js"></script>
 </body>
-</html>
 
-<!-- Under Construction Page -->
-<script>
-  fetch('components/under-construction.html')
-    .then(response => response.text())
-    .then(html => {
-      document.body.insertAdjacentHTML('beforeend', html);
-    });
-</script>
+</html>

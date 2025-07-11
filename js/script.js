@@ -19,17 +19,26 @@ const loadNavbarDynamic = async () => {
 
 // Sets the 'active' class on the navigation link that matches the current page
 const setActiveNavItem = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sourceParam = urlParams.get('source');
     const currentPath = window.location.pathname.split('/').pop();
     const navLinks = document.querySelectorAll('header nav a, header ul li a');
     navLinks.forEach(link => {
         link.classList.remove('active');
         const linkPath = link.getAttribute('href').split('/').pop();
+
         // Set active for normal nav links
         if (linkPath === currentPath || (linkPath === '' && currentPath === '')) {
             link.classList.add('active');
         }
+
         // Special case: set active for user profile link if on profile.html
         if (currentPath === 'profile.html' && linkPath === '#') {
+            link.classList.add('active');
+        }
+
+        // Additional: set active based on 'source' parameter in URL
+        if (sourceParam && linkPath === sourceParam) {
             link.classList.add('active');
         }
     });
@@ -91,6 +100,10 @@ const redirectToSignIn = (pageSubUrl) => {
 
 const setUserName = () => {
     const user = JSON.parse(localStorage.getItem('ndrUser'));
+    var userFullNameElement = document.getElementById('userFullName');
+    if (!userFullNameElement) {
+        return;
+    }
     if (user && user.name) {
         document.getElementById('userFullName').textContent = user.name;
     }
@@ -104,4 +117,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     addSignInNavItem();
     setActiveNavItem();
     setUserName();
+});
+
+window.addEventListener('load', function () {
+    this.setTimeout(() => {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
+    }, 500);
 });

@@ -1,7 +1,7 @@
 // Replace these values with your Auth0 domain and client ID
 const auth0Client = new auth0.WebAuth({
-    domain: 'login.41sol.com',
-    clientID: 'FjRSBqW7JCWBLsCymamM2pPWgLz4yWDl',
+    domain: 'login.sdl-ndrosaire.com',
+    clientID: 'PzmJ3f117zheqCUzZS1e9oFgr7T6qb16',
     redirectUri: window.location.href,
     responseType: 'token id_token',
     scope: 'openid profile email'

@@ -1,88 +1,115 @@
-const getTrimesterMeetings = () => {
-  const trimesterId = '4c2da1e1-cc5c-f011-bec2-7c1e5287baa5';
+var trimesterId = new URLSearchParams(window.location.search).get('trimesterId');
+
+const getCurrentTrimesterId = async () => {
+    const roleCode = JSON.parse(localStorage.ndrUser)['https://sdl-ndrosaire.com/user_metadata']['role'];
+    const apiUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/current?roleCode=${roleCode}`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const trimester = await response.json();
+      const trimesterId = trimester?.ndr_trimesterid;
+
+      return trimesterId;
+
+    } catch (error) {
+      console.error("Failed to fetch trimester ID:", error);
+    }
+}
+
+const setTrimesterId = async () => {
+  trimesterId = new URLSearchParams(window.location.search).get('trimesterId') || await getCurrentTrimesterId();
+}
+
+const getTrimesterMeetings = async () => {
   const apiUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/meetings?trimesterId=${trimesterId}`;
 
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(data => {
-      const tableBody = document.querySelector("#meetings-table tbody");
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-      data.forEach(meeting => {
-        const row = document.createElement("tr");
-        row.id = meeting.ndr_activityid;
+    const tableBody = document.querySelector("#meetings-table tbody");
 
-        const dateObj = new Date(meeting.ndr_startdatetime);
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-        row.innerHTML = `
-          <td style="font-weight: bold;">${day} ${month}</td>
-          <td><input type="text" value="${meeting.ndr_theme ? meeting.ndr_theme : ""}" /></td>
-          <td>
-            <a href="meeting.html?id=${meeting.ndr_activityid}&source=trimester.html" class="info-btn" title="View Info" style="font-size: 1.2em; text-decoration: none;" tabindex="-1">
-              <i class="fa-solid fa-circle-info" tabindex="-1"></i>
-            </a>
-          </td>
-        `;
+    data.forEach(meeting => {
+      const row = document.createElement("tr");
+      row.id = meeting.ndr_activityid;
 
-        tableBody.appendChild(row);
-      });
-    })
-    .catch(error => {
-      console.error("Error fetching meetings:", error);
+      const dateObj = new Date(meeting.ndr_startdatetime);
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+
+      row.innerHTML = `
+        <td style="font-weight: bold;">${day} ${month}</td>
+        <td><input type="text" value="${meeting.ndr_theme ? meeting.ndr_theme : ""}" /></td>
+        <td>
+          <a href="meeting.html?id=${meeting.ndr_activityid}&source=trimester.html" class="info-btn" title="View Info" style="font-size: 1.2em; text-decoration: none;" tabindex="-1">
+            <i class="fa-solid fa-circle-info" tabindex="-1"></i>
+          </a>
+        </td>
+      `;
+
+      tableBody.appendChild(row);
     });
-}
+  } catch (error) {
+    console.error("Error fetching meetings:", error);
+  }
+};
 
-const getTrimesterNeeds = () => {
-  const trimesterId = '4c2da1e1-cc5c-f011-bec2-7c1e5287baa5';
+
+const getTrimesterNeeds = async () => {
   const apiUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/needs?trimesterId=${trimesterId}`;
 
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(data => {
-      const tableBody = document.querySelector("#needs-table tbody");
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-      data.forEach(need => {
-        const row = document.createElement("tr");
-        row.id = need.ndr_needid;
+    const tableBody = document.querySelector("#needs-table tbody");
 
-        row.innerHTML = `
-          <td><input type="text" value="${need.ndr_name ? need.ndr_name : ""}" /></td>
-        `;
+    data.forEach(need => {
+      const row = document.createElement("tr");
+      row.id = need.ndr_needid;
 
-        tableBody.appendChild(row);
-      });
-      handleMultipleInputs('needs-table');
-    })
-    .catch(error => {
-      console.error("Error fetching needs:", error);
+      row.innerHTML = `
+        <td><input type="text" value="${need.ndr_name ? need.ndr_name : ""}" /></td>
+      `;
+
+      tableBody.appendChild(row);
     });
-}
 
-const getTrimesterObjectives = () => {
-  const trimesterId = '4c2da1e1-cc5c-f011-bec2-7c1e5287baa5';
+    handleMultipleInputs('needs-table');
+  } catch (error) {
+    console.error("Error fetching needs:", error);
+  }
+};
+
+
+const getTrimesterObjectives = async () => {
   const apiUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/objectives?trimesterId=${trimesterId}`;
 
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(data => {
-      const tableBody = document.querySelector("#objectives-table tbody");
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-      data.forEach(objective => {
-        const row = document.createElement("tr");
-        row.id = objective.ndr_objectiveid;
+    const tableBody = document.querySelector("#objectives-table tbody");
 
-        row.innerHTML = `
-          <td><input type="text" value="${objective.ndr_name ? objective.ndr_name : ""}" /></td>
-        `;
+    data.forEach(objective => {
+      const row = document.createElement("tr");
+      row.id = objective.ndr_objectiveid;
 
-        tableBody.appendChild(row);
-      });
-      handleMultipleInputs('objectives-table');
-    })
-    .catch(error => {
-      console.error("Error fetching objectives:", error);
+      row.innerHTML = `
+        <td><input type="text" value="${objective.ndr_name ? objective.ndr_name : ""}" /></td>
+      `;
+
+      tableBody.appendChild(row);
     });
-}
+
+    handleMultipleInputs('objectives-table');
+  } catch (error) {
+    console.error("Error fetching objectives:", error);
+  }
+};
+
 
 const handleMultipleInputs = (tableId) => {
   const tableBody = document.getElementById(tableId).querySelector('tbody');
@@ -183,7 +210,6 @@ const updateTrimester = () => {
 
   console.log(JSON.stringify(body, null, 2));
 
-  const trimesterId = '4c2da1e1-cc5c-f011-bec2-7c1e5287baa5';
   fetch(`https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/${trimesterId}`, {
     method: 'POST',
     headers: {
@@ -207,14 +233,17 @@ const updateTrimester = () => {
     });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("scriptJsReady", async () => {
+  showLoader();
   redirectToSignIn("trimester.html");
-  getTrimesterMeetings();
-  getTrimesterNeeds();
-  getTrimesterObjectives();
+  await setTrimesterId();
+  await getTrimesterMeetings();
+  await getTrimesterNeeds();
+  await getTrimesterObjectives();
 
   document.getElementById('save-trimester-btn').addEventListener('click', () => {
     updateTrimester();
   });
+  hideLoader();
 });
 

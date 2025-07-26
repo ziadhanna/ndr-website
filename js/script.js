@@ -17,6 +17,25 @@ const loadNavbarDynamic = async () => {
     }
 };
 
+// Determines the correct path to the loader.html file based on the current page location
+const getLoaderPath = () => {
+    return `${window.location.origin}/components/loader.html`;
+};
+
+// Loads the navbar HTML dynamically into the <loader> element
+const loadLoaderDynamic = async () => {
+    try {
+        const response = await fetch(getLoaderPath());
+        if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const loaderHTML = await response.text();
+        document.querySelector('loader').innerHTML = loaderHTML;
+    } catch (error) {
+        console.error('Error loading loader:', error);
+    }
+};
+
 // Sets the 'active' class on the navigation link that matches the current page
 const setActiveNavItem = () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -112,18 +131,40 @@ const setUserName = () => {
     }
 }
 
+const showLoader = () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'flex';
+    }
+}
+
+const hideLoader = () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+    const container = document.querySelector('.container');
+    if (container) {
+        container.style.display = 'block';
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+    await loadLoaderDynamic();
+    showLoader();
     await loadNavbarDynamic();
     addSignInNavItem();
     setActiveNavItem();
     setUserName();
+    hideLoader();
+    document.dispatchEvent(new Event("scriptJsReady"));
 });
 
-window.addEventListener('load', function () {
-    this.setTimeout(() => {
-        const loader = document.getElementById('loader');
-        if (loader) {
-            loader.style.display = 'none';
-        }
-    }, 500);
-});
+// window.addEventListener('load', function () {
+//     this.setTimeout(() => {
+//         const loader = document.getElementById('loader');
+//         if (loader) {
+//             loader.style.display = 'none';
+//         }
+//     }, 500);
+// });

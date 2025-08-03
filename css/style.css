@@ -2,7 +2,7 @@
     --primary-color: #9F69A5;
     --secondary-color: #FAF0E6;
     --text-color: #2d2d2d;
-    --background-color: #fff;
+    --background-color: #FAF0E6;
     --border-radius: 10px;
 }
 
@@ -63,7 +63,7 @@ button:hover,
 
 .card {
     background: var(--background-color);
-    border: 1px solid #e0d6e3;
+    border: 1px solid var(--primary-color);
     border-radius: var(--border-radius);
     box-shadow: 0 2px 8px rgba(159, 105, 165, 0.08);
     padding: 1.5rem;
@@ -72,14 +72,20 @@ button:hover,
 
 input,
 textarea,
-select {
-    border: 1px solid #d1bcd6;
+select,
+.form-control {
+    border: 1px solid var(--primary-color);
     border-radius: var(--border-radius);
     padding: 0.5em;
     font-size: 1em;
-    background: var(--secondary-color);
     color: var(--text-color);
 }
+
+input[readonly] {
+    background-color: transparent !important;
+    pointer-events: none; /* Optional: prevents the cursor from changing */
+}
+
 
 input:focus,
 textarea:focus,
@@ -224,6 +230,11 @@ tr {
 
 .text-primary {
     color: var(--primary-color) !important;
+}
+
+.remove-item-btn {
+    background-color: var(--bs-btn-active-bg);
+    border-color: var(--bs-btn-active-border-color);
 }
 
 @media (min-width: 992px) {

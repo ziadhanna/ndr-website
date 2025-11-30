@@ -1,40 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meeting</title>
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <!-- Bootstrap CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+
   <!-- Your custom CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
   <header></header>
   <loader></loader>
 
   <!-- Bootstrap JS Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+    crossorigin="anonymous"></script>
 
   <!-- Your custom JS -->
   <script src="js/script.js"></script>
   <script src="js/meeting.js"></script>
+  <div class="container my-5">
+    <section class="mb-4">
+      <div class="row gx-3 gy-2 align-items-end">
+        <!-- Date: Full width -->
+        <div class="col-12 col-md-4">
+          <label for="meeting-date" class="form-label">Date</label>
+          <input type="text" id="meeting-date" class="form-control" readonly value="2025-08-03" />
+        </div>
+
+        <!-- Planned Participants -->
+        <div class="col-6 col-md-4">
+          <label for="planned-participants" class="form-label">Planned No. Participants</label>
+          <input type="number" id="planned-participants" class="form-control" value="15" />
+        </div>
+
+        <!-- Actual Participants -->
+        <div class="col-6 col-md-4">
+          <label for="actual-participants" class="form-label">Actual No. Participants</label>
+          <input type="number" id="actual-participants" class="form-control" value="12" />
+        </div>
+      </div>
+    </section>
+
+
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Meeting Items</h2>
+        <button class="btn btn-sm" id="add-item-btn">
+          <i class="fas fa-plus me-2"></i>Add Item
+        </button>
+      </div>
+
+      <div id="meeting-items-list">
+        <!-- Meeting items will be injected here -->
+      </div>
+    </section>
+
+    <button class="btn btn-primary w-100" id="save-meeting-btn">
+      <i class="fas fa-save me-2"></i>Save Meeting
+    </button>
+  </div>
 </body>
+
 </html>
 <script>
-  // if (!localStorage.getItem('ndrUser')) {
-  //   window.location.href = `signin.html?redirectUri=${window.location.origin}/archive.html`;
-  // }
+  document.addEventListener('scriptJsReady', () => {
+    const plannedInput = document.getElementById('planned-participants');
+    const actualInput = document.getElementById('actual-participants');
+    const itemList = document.getElementById('meeting-items-list');
+    const addBtn = document.getElementById('add-item-btn');
+    const saveBtn = document.getElementById('save-meeting-btn');
+
+    // Dummy initial values
+    plannedInput.value = '15';
+    actualInput.value = '12';
+
+    // Add dummy meeting items
+    addMeetingItemCard('09:00', '10:00', 'Welcome');
+    addMeetingItemCard('10:15', '11:30', 'Team Discussion');
+
+    // Add new item
+    addBtn.addEventListener('click', () => {
+      addMeetingItemCard('', '', '');
+    });
+
+    // Remove item when delete button is clicked
+    itemList.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-item-btn');
+      if (removeBtn) {
+        const card = removeBtn.closest('.card');
+        card.remove();
+      }
+    });
+
+    // Save Meeting
+    saveBtn.addEventListener('click', () => {
+      const meetingDate = document.getElementById('meeting-date').value;
+      const planned = plannedInput.value;
+      const actual = actualInput.value;
+
+      const items = Array.from(itemList.children).map(card => {
+        const inputs = card.querySelectorAll('input');
+        return {
+          start: inputs[0].value,
+          end: inputs[1].value,
+          theme: inputs[2].value.trim()
+        };
+      });
+
+      // Replace this with your API call
+      console.log({
+        date: meetingDate,
+        plannedParticipants: planned,
+        actualParticipants: actual,
+        items
+      });
+
+      alert("Meeting saved successfully!");
+    });
+
+    // Utility to create meeting item card
+    function addMeetingItemCard(start = '', end = '', theme = '') {
+      const item = document.createElement('div');
+      item.className = 'card p-3 mb-3';
+      item.innerHTML = `
+        <div class="row gx-2 gy-2 mb-3">
+          <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+              <div class="flex-grow-1">
+                <label class="form-label">Start Time</label>
+                <input type="time" class="form-control" value="${start}" />
+              </div>
+              <div class="flex-grow-1">
+                <label class="form-label">End Time</label>
+                <input type="time" class="form-control" value="${end}" />
+              </div>
+              <div class="flex-grow-1">
+                <label class="form-label">Theme</label>
+                <input type="text" class="form-control" value="${theme}" />
+              </div>
+              <div class="d-flex flex-column justify-content-end">
+                <button class="btn btn-outline-danger remove-item-btn" type="button">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      itemList.appendChild(item);
+    }
+
+  });
+
 </script>
 
 <!-- Under Construction Page -->
-<script>
+<!-- <script>
   fetch('components/under-construction.html')
     .then(response => response.text())
     .then(html => {
       document.body.insertAdjacentHTML('beforeend', html);
     });
-</script>
+</script> -->

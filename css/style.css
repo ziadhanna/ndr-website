@@ -237,6 +237,18 @@ tr {
     border-color: var(--bs-btn-active-border-color);
 }
 
+/* Prevent the clock icon from receiving keyboard focus */
+input[type="time"] {
+    tabindex: -1; /* Not standard CSS, but works in some contexts or requires JS */
+}
+
+/* Better Approach: Make the icon strictly for mouse interaction */
+/* This works by ensuring the input itself handles the focus, not the internal icon */
+input[type="time"]::-webkit-calendar-picker-indicator {
+    pointer-events: auto; /* Ensure it is still clickable */
+    outline: none;        /* Remove focus ring if it gets it */
+}
+
 @media (min-width: 992px) {
     .hide-big {
         display: none !important;

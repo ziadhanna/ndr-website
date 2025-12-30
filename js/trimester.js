@@ -1,5 +1,18 @@
 var trimesterId = new URLSearchParams(window.location.search).get('trimesterId');
 
+let isUnsaved = false;
+
+window.addEventListener('beforeunload', (event) => {
+    if (isUnsaved) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+
+const markAsUnsaved = () => {
+    isUnsaved = true;
+};
+
 const getCurrentTrimesterId = async () => {
     const roleCode = JSON.parse(localStorage.ndrUser)['https://sdl-ndrosaire.com/user_metadata']['role'];
     const apiUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/trimesters/current?roleCode=${roleCode}`;
@@ -50,6 +63,10 @@ const getTrimesterMeetings = async () => {
       `;
 
       tableBody.appendChild(row);
+      const themeInput = row.querySelector('input[type="text"]');
+      if (themeInput) {
+          themeInput.addEventListener('input', markAsUnsaved);
+      }
     });
   } catch (error) {
     console.error("Error fetching meetings:", error);
@@ -126,6 +143,7 @@ const handleMultipleInputs = (tableId) => {
     tableBody.appendChild(tr);
 
     input.addEventListener('input', function () {
+      markAsUnsaved();
       const inputs = tableBody.querySelectorAll('input[type="text"]');
       // Add new input if this is the last and not empty
       if (inputs[inputs.length - 1] === input && input.value.trim() !== '') {
@@ -144,6 +162,9 @@ const handleMultipleInputs = (tableId) => {
     rows.forEach((tr, idx) => {
       const input = tr.querySelector('input[type="text"]');
       if (!input) return;
+      input.addEventListener('input', function(){
+        markAsUnsaved();
+      });
       input.oninput = function () {
         const inputs = tableBody.querySelectorAll('input[type="text"]');
         // Add new input if this is the last and not empty
@@ -219,7 +240,8 @@ const updateTrimester = () => {
   })
     .then(response => {
       if (!response.ok) throw new Error('Failed to update trimester');
-      alert('Trimester updated successfully!');
+      // alert('Trimester updated successfully!');
+      isUnsaved = false;
       if (loader) {
         loader.style.display = 'none';
       }

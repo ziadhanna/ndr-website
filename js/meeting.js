@@ -4,6 +4,21 @@ const setMeetingId = () => {
     meetingId = new URLSearchParams(window.location.search).get('id');
 }
 
+let isUnsaved = false;
+
+// Trigger browser warning if isUnsaved is true
+window.addEventListener('beforeunload', (event) => {
+    if (isUnsaved) {
+        event.preventDefault();
+        event.returnValue = ''; // Required for Chrome/Edge/Firefox
+    }
+});
+
+// Helper to mark state as dirty
+const markAsUnsaved = () => {
+    isUnsaved = true;
+};
+
 const utcToTimeInputValue = (utcString) => {
     if (!utcString) return '';
     const d = new Date(utcString);
@@ -77,22 +92,31 @@ const formatTimeValue = (val) => {
 };
 
 // 2. Helper to add a single row
-const addMeetingItemRow = (id, start = '', end = '', theme = '') => {
+const addMeetingItemRow = (id, start = '', end = '', theme = '', insertAfterTr = null) => {
     const tableBody = document.querySelector("#meeting-items-table tbody");
-    const isFirstRow = tableBody.children.length === 0;
+    
+    // Determine if this will be the first row
+    const isFirstRow = !insertAfterTr && tableBody.children.length === 0;
 
+    // Prefill Logic: If not provided, try to grab from previous row
     if (!start && !isFirstRow) {
-        const rows = tableBody.querySelectorAll('tr');
-        if (rows.length > 0) {
-            const lastRowEnd = rows[rows.length - 1].querySelectorAll('input')[1].value;
-            if (lastRowEnd) start = lastRowEnd; 
+        // If inserting after a specific row, use that row's end time
+        if (insertAfterTr) {
+            const prevEnd = insertAfterTr.querySelector('.end-time').value;
+            if (prevEnd) start = prevEnd;
+        } else {
+            // Fallback to last row if appending
+            const rows = tableBody.querySelectorAll('tr');
+            if (rows.length > 0) {
+                const lastRowEnd = rows[rows.length - 1].querySelectorAll('input')[1].value;
+                if (lastRowEnd) start = lastRowEnd;
+            }
         }
     }
 
     const row = document.createElement('tr');
     if (id) row.id = id;
 
-    // UPDATE: Add tabindex="-1" to read-only rows so Tab key skips them
     const readOnlyAttr = isFirstRow ? '' : 'readonly tabindex="-1"';
     const readOnlyStyle = isFirstRow ? '' : 'style="background-color: #e9ecef;"';
 
@@ -110,14 +134,23 @@ const addMeetingItemRow = (id, start = '', end = '', theme = '') => {
             <input type="text" class="form-control theme" 
                    value="${theme || ''}" />
         </td>
-        <td class="text-center align-middle">
-            <button class="btn btn-outline-danger btn-sm remove-item-btn" type="button" tabindex="-1">
+        <td class="text-center align-middle text-nowrap">
+            <button class="btn btn-outline-primary btn-sm add-item-btn me-1" type="button" tabindex="-1" title="Insert item below">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm remove-item-btn" type="button" tabindex="-1" title="Delete item">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </td>
     `;
     
-    tableBody.appendChild(row);
+    // Insertion Logic
+    if (insertAfterTr && insertAfterTr.nextSibling) {
+        tableBody.insertBefore(row, insertAfterTr.nextSibling);
+    } else {
+        tableBody.appendChild(row);
+    }
+
     return row;
 }
 
@@ -146,65 +179,109 @@ const handleMeetingItemsTable = () => {
         const inputs = tr.querySelectorAll('input');
         const endTimeInput = tr.querySelector('.end-time');
         const removeBtn = tr.querySelector('.remove-item-btn');
+        const addBtn = tr.querySelector('.add-item-btn'); // <--- Select new button
+        const icon = removeBtn.querySelector('i'); 
 
-        removeBtn.addEventListener('click', () => {
-            const nextRow = tr.nextElementSibling;
-            const prevRow = tr.previousElementSibling;
+        // 1. INSERT BUTTON LOGIC (New)
+        addBtn.addEventListener('click', () => {
+            // Get current row's end time to prefill the new row's start time
+            const currentEnd = endTimeInput.value;
             
-            tr.remove();
+            // Insert new row immediately AFTER this 'tr'
+            const newRow = addMeetingItemRow(null, currentEnd, '', '', tr);
             
-            // EDGE CASE: If we deleted the FIRST row, the new top row must become editable and TABBABLE
-            if (!prevRow && nextRow) {
+            // If there was a row AFTER the new one, we need to link the chain
+            // (New Row End Time is empty, so Next Row Start Time becomes empty until filled)
+            const nextRow = newRow.nextElementSibling;
+            if (nextRow) {
                 const nextStart = nextRow.querySelector('.start-time');
-                nextStart.removeAttribute('readonly');
-                nextStart.removeAttribute('tabindex'); // <--- Make tabbable
-                nextStart.style.backgroundColor = ''; 
+                nextStart.value = ''; // Reset because chain is broken until user fills new row
             }
 
+            attachListeners(newRow);
             updateDeleteButtons();
         });
 
+        // 2. DELETE LOGIC (Existing - No changes needed, just ensure it handles the chain)
+        removeBtn.addEventListener('click', async () => {
+             // ... [Keep your existing delete logic exactly as is] ...
+             // (Copy the full delete logic block from the previous response here)
+             if (tr.id) {
+                const originalClass = icon.className;
+                icon.className = 'fas fa-spinner fa-spin'; 
+                removeBtn.disabled = true;
+                try {
+                    const deleteUrl = `https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/meetings/items/${tr.id}`;
+                    const response = await fetch(deleteUrl, { method: 'DELETE' });
+                    if (!response.ok) throw new Error("Failed to delete item");
+                    tr.removeAttribute('id'); tr.id = ""; 
+                } catch (error) {
+                    console.error("Error deleting item:", error);
+                    alert("Error deleting item from database.");
+                    icon.className = originalClass;
+                    removeBtn.disabled = false;
+                    return; 
+                }
+            }
+            
+            if (tr === tableBody.lastElementChild) {
+                inputs.forEach(input => input.value = '');
+                icon.className = 'fas fa-trash-alt';
+                removeBtn.disabled = false;
+            } else {
+                const prevRow = tr.previousElementSibling;
+                const nextRow = tr.nextElementSibling;
+                tr.remove();
+                if (prevRow && nextRow) {
+                    const prevEndVal = prevRow.querySelector('.end-time').value;
+                    const nextStart = nextRow.querySelector('.start-time');
+                    nextStart.value = prevEndVal;
+                } else if (!prevRow && nextRow) {
+                    const nextStart = nextRow.querySelector('.start-time');
+                    nextStart.removeAttribute('readonly');
+                    nextStart.removeAttribute('tabindex');
+                    nextStart.style.backgroundColor = '';
+                }
+            }
+            updateDeleteButtons();
+            updateMeeting(); 
+        });
+
+        // 3. PREFILL NEXT ROW (Existing)
         endTimeInput.addEventListener('change', () => {
             const nextRow = tr.nextElementSibling;
             if (nextRow) {
                 const nextStart = nextRow.querySelector('.start-time');
                 nextStart.value = endTimeInput.value;
                 nextStart.setAttribute('readonly', true);
-                nextStart.setAttribute('tabindex', '-1'); // <--- Make skipped
+                nextStart.setAttribute('tabindex', '-1');
                 nextStart.style.backgroundColor = '#e9ecef';
             }
         });
 
+        // 4. AUTO-ADD & TAB SKIP (Existing)
         inputs.forEach(input => {
+             input.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab' && !e.shiftKey && input.type === 'time') {
+                    e.preventDefault(); 
+                    const allInputs = Array.from(document.querySelectorAll('#meeting-items-table input:not([tabindex="-1"])'));
+                    const currentIndex = allInputs.indexOf(input);
+                    if (currentIndex > -1 && currentIndex < allInputs.length - 1) {
+                        allInputs[currentIndex + 1].focus();
+                    } else {
+                        const saveBtn = document.getElementById('save-meeting-btn');
+                        if (saveBtn) saveBtn.focus();
+                    }
+                }
+            });
+
             input.addEventListener('input', () => {
+                markAsUnsaved();
                 const lastRow = tableBody.lastElementChild;
                 if (tr === lastRow && !isRowEmpty(tr)) {
                     const newRow = addMeetingItemRow(null);
                     attachListeners(newRow); 
                     updateDeleteButtons();
-                }
-            });
-        });
-
-        inputs.forEach(input => {
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Tab' && !e.shiftKey) {
-                    // Check if this is a time input
-                    if (input.type === 'time') {
-                        e.preventDefault(); // Stop default tab behavior (which might go to the icon)
-                        
-                        // Find the next input in the row or the next row
-                        const allInputs = Array.from(document.querySelectorAll('#meeting-items-table input:not([tabindex="-1"])'));
-                        const currentIndex = allInputs.indexOf(input);
-                        
-                        if (currentIndex > -1 && currentIndex < allInputs.length - 1) {
-                            allInputs[currentIndex + 1].focus();
-                        } else {
-                            // If it's the last input, focus the save button or next focusable element
-                            const saveBtn = document.getElementById('save-meeting-btn');
-                            if (saveBtn) saveBtn.focus();
-                        }
-                    }
                 }
             });
         });
@@ -243,15 +320,52 @@ const handleMeetingItemsTable = () => {
 };
 
 const updateMeeting = () => {
+    // 1. Validation Logic
+    const tableRows = document.querySelectorAll('#meeting-items-table tbody tr');
+    let isValid = true;
+
+    for (const row of tableRows) {
+        const inputs = row.querySelectorAll('input');
+        const startVal = inputs[0].value;
+        const endVal = inputs[1].value;
+        const themeVal = inputs[2].value.trim();
+
+        // Determine if the row is "active" (has End Time or Theme)
+        // We ignore the last dummy row if it only has an auto-filled Start Time.
+        const isActiveRow = endVal || themeVal;
+
+        if (isActiveRow) {
+            // Check 1: Completeness (Must have both times)
+            if (!startVal || !endVal) {
+                alert("Please provide both Start and End times for all meeting items.");
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (!startVal) inputs[0].focus();
+                else inputs[1].focus();
+                return; // STOP execution
+            }
+
+            // Check 2: Strict Chronology (End > Start)
+            // String comparison works here because values are in "HH:mm" 24-hour format
+            if (startVal >= endVal) {
+                alert("End Time must be strictly later than Start Time.");
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Highlight the End Time input as the issue
+                inputs[1].focus();
+                inputs[1].style.borderColor = "red"; // Optional visual cue
+                setTimeout(() => inputs[1].style.borderColor = "", 3000); // Reset after 3s
+                return; // STOP execution
+            }
+        }
+    }
+
+    // 2. Existing Save Logic
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'flex';
+
     const plannedInput = document.getElementById('planned-participants');
     const actualInput = document.getElementById('actual-participants');
     
-    // 1. Safe Date Retrieval
-    // Since the visible input is now formatted as "24 JAN", we cannot parse it directly.
-    // We try to grab the raw ISO date from a data attribute (if you set one) or default to a safe value.
-    // Ideally, ensure getMeetingDetails sets: dateInput.setAttribute('data-iso', data.Date);
-    // For now, we will assume the backend handles the date or we use the Meeting's known date.
-    // This is a placeholder for the date logic you established previously.
+    // Retrieve Date safely
     const dateInput = document.getElementById('meeting-date');
     const rawDate = dateInput.getAttribute('data-iso') || new Date().toISOString(); 
     const [year, month, day] = rawDate.split('T')[0].split('-').map(Number);
@@ -259,24 +373,20 @@ const updateMeeting = () => {
     const PlannedParticipantsNumber = parseInt(plannedInput.value) || 0;
     const ActualParticipantsNumber = parseInt(actualInput.value) || 0;
 
-    const tableRows = document.querySelectorAll('#meeting-items-table tbody tr');
     const MeetingItems = [];
 
     tableRows.forEach(row => {
         const inputs = row.querySelectorAll('input');
-        
-        // input[0] is Start Time (might be prefilled, so we ignore it for validity check)
         const startVal = inputs[0].value; 
         const endVal = inputs[1].value;
         const themeVal = inputs[2].value;
 
-        // CHECK: Ignore row if End Time AND Theme are empty.
-        // We explicitly ignore 'startVal' here because it might be auto-filled.
+        // Skip rows that are empty (double check for data collection)
         if (!endVal && !themeVal.trim()) return;
 
         const itemId = row.id;
-        const [startHours, startMinutes] = startVal ? startVal.split(":").map(Number) : [0, 0];
-        const [endHours, endMinutes] = endVal ? endVal.split(":").map(Number) : [0, 0];
+        const [startHours, startMinutes] = startVal.split(":").map(Number);
+        const [endHours, endMinutes] = endVal.split(":").map(Number);
 
         MeetingItems.push({
             ndr_activityitemid: itemId ? itemId : null,
@@ -292,20 +402,23 @@ const updateMeeting = () => {
         MeetingItems
     };
 
-    console.log(JSON.stringify(body, null, 2));
-
-    fetch(`https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/meetings/${meetingId}`, {
+    return fetch(`https://sdl-ndrosaire-gmf8cnafg5g9fufr.francecentral-01.azurewebsites.net/api/meetings/${meetingId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
     })
     .then(response => {
         if (!response.ok) throw new Error('Failed to update meeting');
-        alert('Meeting updated successfully!');
+        console.log('Meeting updated successfully');
+        
+        isUnsaved = false; // Reset unsaved flag
     })
     .catch(error => {
         console.error('Error updating meeting:', error);
         alert('Error updating meeting');
+    })
+    .finally(() => {
+        if (loader) loader.style.display = 'none';
     });
 }
 
@@ -320,5 +433,10 @@ document.addEventListener('scriptJsReady', () => {
 
     saveBtn.addEventListener('click', () => {
         updateMeeting();
+    });
+    
+    const staticInputs = document.querySelectorAll('#meeting-theme, #planned-participants, #actual-participants, #meeting-date');
+    staticInputs.forEach(input => {
+        input.addEventListener('input', markAsUnsaved);
     });
 });

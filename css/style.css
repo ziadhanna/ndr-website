@@ -56,10 +56,10 @@ button,
     transition: background 0.2s;
 }
 
-button:hover,
+/* button:hover,
 .btn:hover {
     background: #7c4d80;
-}
+} */
 
 .card {
     background: var(--background-color);
@@ -247,6 +247,70 @@ input[type="time"] {
 input[type="time"]::-webkit-calendar-picker-indicator {
     pointer-events: auto; /* Ensure it is still clickable */
     outline: none;        /* Remove focus ring if it gets it */
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: 2px solid var(--primary-color); /* Matches your generic input:focus rule */
+    box-shadow: none; /* Removes the default Bootstrap blue glow */
+}
+
+/* Override Bootstrap's .btn-primary variables to use your custom colors */
+.btn-primary,
+.btn-outline-primary {
+    --bs-btn-bg: var(--primary-color);
+    --bs-btn-border-color: var(--primary-color);
+    
+    /* Hover State (slightly darker purple) */
+    --bs-btn-hover-bg: #7c4d80;
+    --bs-btn-hover-border-color: #7c4d80;
+    
+    /* Active/Click State (even darker purple) */
+    --bs-btn-active-bg: #5e3a61; 
+    --bs-btn-active-border-color: #5e3a61;
+    
+    /* Disabled State */
+    --bs-btn-disabled-bg: var(--primary-color);
+    --bs-btn-disabled-border-color: var(--primary-color);
+    
+    /* Focus Shadow (The glow ring) - Purple with transparency */
+    --bs-btn-focus-shadow-rgb: 159, 105, 165; 
+}
+
+/* Force override for any lingering blue states */
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:active:focus,
+.btn-outline-primary:active,
+.btn-outline-primary:focus,
+.btn-outline-primary:active:focus {
+    background-color: #5e3a61 !important;
+    border-color: #5e3a61 !important;
+    /*box-shadow: 0 0 0 0.25rem rgba(159, 105, 165, 0.5) !important;  Purple glow */
+}
+
+/* --- Delete Button (Outline Danger) --- */
+/* Forces it to use Red shades, overriding any default blue focus effects */
+.btn-outline-danger {
+    /* Define your Red Color here */
+    --danger-color: #b02a37; 
+    --danger-hover: #bb2d3b;
+    --danger-active: #dc3545;
+
+    --bs-btn-color: var(--danger-color);
+    --bs-btn-border-color: var(--danger-color);
+    
+    /* Hover State */
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--danger-hover);
+    --bs-btn-hover-border-color: var(--danger-hover);
+    
+    /* Active/Click State */
+    --bs-btn-active-bg: var(--danger-active);
+    --bs-btn-active-border-color: var(--danger-active);
+    
+    /* Focus Ring (Red with transparency) */
+    --bs-btn-focus-shadow-rgb: 220, 53, 69;
 }
 
 @media (min-width: 992px) {
